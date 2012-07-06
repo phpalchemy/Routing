@@ -105,22 +105,31 @@ class Mapper
         // first, order by separator number '/'
         usort($list, function ($a, $b)
         {
-            if ($b['patCount'] == $a['patCount']) return 0;
+            if ($b['patCount'] == $a['patCount']) {
+                return 0;
+            }
+
             return $b['patCount'] < $a['patCount'] ? 1 : -1;
         });
 
         $n = count($list);
-        for($i = 1; $i < $n; $i++) {
+        for ($i = 1; $i < $n; $i++) {
             $j= $i - 1;
-            while ($j>=0 && $list[$j]['patCount'] == $list[$i]['patCount'] && $list[$j]['varCount'] > $list[$i]['varCount']) {
+            while (
+                $j>=0 && $list[$j]['patCount'] == $list[$i]['patCount'] &&
+                $list[$j]['varCount'] > $list[$i]['varCount']
+            ) {
                 $this->swapValues($list[$j+1],$list[$j]);
                 $j--;
             }
         }
 
-        for($i = 1; $i < $n; $i++) {
+        for ($i = 1; $i < $n; $i++) {
             $j= $i - 1;
-            while ($j>=0 && $list[$j]['patCount'] == $list[$i]['patCount'] && $list[$j]['varCount'] >= $list[$i]['varCount'] && $list[$j]['reqCount'] < $list[$i]['reqCount']) {
+            while (
+                $j>=0 && $list[$j]['patCount'] == $list[$i]['patCount'] &&
+                $list[$j]['varCount'] >= $list[$i]['varCount'] && $list[$j]['reqCount'] < $list[$i]['reqCount']
+            ) {
                 $this->swapValues($list[$j+1],$list[$j]);
                 $j--;
             }

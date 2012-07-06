@@ -111,3 +111,4 @@ class MapperTest extends PHPUnit_Framework_TestCase
         $params = $mapper->match($url);
     }
 }
+

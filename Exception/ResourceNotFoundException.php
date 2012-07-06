@@ -36,3 +36,4 @@ class ResourceNotFoundException extends \Exception
         parent::__construct(sprintf('Resource "%s" Not Found!', $url));
     }
 }
+

@@ -36,8 +36,13 @@ class Route
 
     public $parameters = array();
 
-    public function __construct($pattern = null, $defaults = null, $requirements = null, $type = null, $resourcePath = null)
-    {
+    public function __construct(
+        $pattern = null,
+        $defaults = null,
+        $requirements = null,
+        $type = null,
+        $resourcePath = null
+    ) {
         if (!defined('DS')) {
             define('DS', DIRECTORY_SEPARATOR);
         }
@@ -143,5 +148,4 @@ class Route
         return $this->parameters;
     }
 }
-
 

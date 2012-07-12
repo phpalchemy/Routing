@@ -126,5 +126,125 @@ class RouteTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $route->match('/my_controller/my_action/2012'));
     }
+
+    /**
+     * @covers Route::match()
+     * - pattern '/my_controller/{action}/{year}'
+     * - match   '/my_controller/my_action/1012'
+     */
+    public function testMatchWithMethodRequirements()
+    {
+        if (! class_exists('Alchemy\Component\Http\Request')) {
+            $this->markTestSkipped(
+              'Alchemy\Component\Http\Request is not available.'
+            );
+        }
+
+        $request = Alchemy\Component\Http\Request::create('/my_controller/my_action/2012', 'GET');
+
+        $route    = new Route(
+            '/my_controller/{action}/{year}',
+            array(
+                'controller' => 'my_controller'
+            ),
+            array(
+                'year' => '\d+',
+                '_method' => 'GET'
+            )
+        );
+        $expected = array('controller'=>'my_controller', 'action'=>'my_action', 'year'=>2012);
+
+        $this->assertEquals($expected, $route->match($request));
+    }
+
+    /**
+     * @covers Route::match()
+     * - pattern '/my_controller/{action}/{year}'
+     * - match   '/my_controller/my_action/1012'
+     */
+    public function testMatchWithMethodsRequirements()
+    {
+        if (! class_exists('Alchemy\Component\Http\Request')) {
+            $this->markTestSkipped(
+              'Alchemy\Component\Http\Request is not available.'
+            );
+        }
+
+        $request = Alchemy\Component\Http\Request::create('/my_controller/my_action/2012', 'GET');
+
+        $route    = new Route(
+            '/my_controller/{action}/{year}',
+            array(
+                'controller' => 'my_controller'
+            ),
+            array(
+                'year' => '\d+',
+                '_method' => array('GET', 'POST')
+            )
+        );
+        $expected = array('controller'=>'my_controller', 'action'=>'my_action', 'year'=>2012);
+
+        $this->assertEquals($expected, $route->match($request));
+    }
+
+    /**
+     * @covers Route::match()
+     * - pattern '/my_controller/{action}/{year}'
+     * - match   '/my_controller/my_action/1012'
+     */
+    public function testFailMatchWithMethodRequirements()
+    {
+        if (! class_exists('Alchemy\Component\Http\Request')) {
+            $this->markTestSkipped(
+              'Alchemy\Component\Http\Request is not available.'
+            );
+        }
+
+        $request = Alchemy\Component\Http\Request::create('/my_controller/my_action/2012', 'PUT');
+
+        $route    = new Route(
+            '/my_controller/{action}/{year}',
+            array(
+                'controller' => 'my_controller'
+            ),
+            array(
+                'year' => '\d+',
+                '_method' => 'GET'
+            )
+        );
+        $expected = array('controller'=>'my_controller', 'action'=>'my_action', 'year'=>2012);
+
+        $this->assertFalse($route->match($request));
+    }
+
+       /**
+     * @covers Route::match()
+     * - pattern '/my_controller/{action}/{year}'
+     * - match   '/my_controller/my_action/1012'
+     */
+    public function testFailMatchWithMethodsRequirements()
+    {
+        if (! class_exists('Alchemy\Component\Http\Request')) {
+            $this->markTestSkipped(
+              'Alchemy\Component\Http\Request is not available.'
+            );
+        }
+
+        $request = Alchemy\Component\Http\Request::create('/my_controller/my_action/2012', 'PUT');
+
+        $route    = new Route(
+            '/my_controller/{action}/{year}',
+            array(
+                'controller' => 'my_controller'
+            ),
+            array(
+                'year' => '\d+',
+                '_method' => array('GET', 'POST')
+            )
+        );
+        $expected = array('controller'=>'my_controller', 'action'=>'my_action', 'year'=>2012);
+
+        $this->assertFalse($route->match($request));
+    }
 }
 

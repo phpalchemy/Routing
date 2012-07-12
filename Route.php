@@ -10,6 +10,8 @@
 
 namespace Alchemy\Component\Routing;
 
+use Alchemy\Component\Http\Request;
+
 /**
  * Class Route
  *
@@ -24,36 +26,39 @@ namespace Alchemy\Component\Routing;
  */
 class Route
 {
-    protected $pattern;
-    protected $realPattern;
-    protected $vars;
-    protected $defaults;
-    protected $requirements;
-    protected $urlString;
+    protected $pattern = '';
+    protected $realPattern = '';
+    protected $vars = array();
+    protected $defaults = array();
+    protected $requirements = array();
+    protected $urlString = '';
 
-    protected $type;
-    protected $resourcePath;
+    protected $type = '';
+    protected $resourcePath = '';
 
     public $parameters = array();
 
+    /**
+     * Request object to try match withh the request information
+     * @var Alchemy\Component\Http\Request
+     */
+    protected $request;
+
     public function __construct(
-        $pattern = null,
-        $defaults = null,
-        $requirements = null,
-        $type = null,
-        $resourcePath = null
+        $pattern = '',
+        array $defaults = array(),
+        array $requirements = array(),
+        $type = '',
+        $resourcePath = ''
     ) {
-        if (!defined('DS')) {
-            define('DS', DIRECTORY_SEPARATOR);
-        }
+        defined('DS') || define('DS', DIRECTORY_SEPARATOR);
 
-        $this->setPattern($pattern ? $pattern : '');
-        $this->setDefaults($defaults ? $defaults : Array());
-        $this->setRequirements($requirements ? $requirements : Array());
+        $this->setPattern($pattern);
+        $this->setDefaults($defaults);
+        $this->setRequirements($requirements);
 
-        $this->type    = $type;
+        $this->type = $type;
         $this->parameters  = array();
-
         $this->resourcePath = $resourcePath;
 
         $this->prepare();
@@ -81,6 +86,23 @@ class Route
 
     public function setRequirements($requirements)
     {
+        if (array_key_exists('_method', $requirements)) {
+            if (! is_array($requirements['_method']) && ! is_string($requirements['_method'])) {
+                throw new \InvalidArgumentException(
+                    "Invalid Argument Error: Param '_method' only accepts string or array definition."
+                );
+            }
+
+            $methods = is_array($requirements['_method']) ? $requirements['_method'] : array($requirements['_method']);
+
+            // convert all methods names to lowercase
+            foreach ($methods as $i => $method) {
+                $methods[$i] = strtolower($method);
+            }
+
+            $requirements['_method'] = $methods;
+        }
+
         $this->requirements = $requirements;
     }
 
@@ -118,12 +140,28 @@ class Route
         $this->realPattern = preg_replace($patterns, $replacements, $this->pattern);
     }
 
-    public function match($urlString)
+    public function match($mixed)
     {
+        $urlString = $mixed;
+        $requestMethod = '';
+
+        if ($urlString instanceof Request) {
+            $urlString = $mixed->getPathInfo();
+            $requestMethod = strtolower($mixed->getMethod());
+        }
+
         $this->urlString = urldecode($urlString);
 
         if (!preg_match('/^'.$this->realPattern.'$/', $this->urlString, $compiledMatches)) {
             return false;
+        }
+
+        // to verify _method requirement was defined $requestMethod ahould defined from Request object
+        if (array_key_exists('_method', $this->requirements) && ! empty($requestMethod)) {
+            // filter method that by requirement
+            if (! in_array($requestMethod, $this->requirements['_method'])) {
+                return false;
+            }
         }
 
         if (!(isset($this->vars[1]) && count($compiledMatches) >= count($this->vars[1]))) {

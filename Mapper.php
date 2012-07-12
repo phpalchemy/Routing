@@ -10,6 +10,8 @@
 
 namespace Alchemy\Component\Routing;
 
+use Alchemy\Component\Http\Request;
+
 /**
  * Class Mapper
  *
@@ -26,25 +28,18 @@ class Mapper
 {
     /**
      * Contains routes collection
-     *
      * @var array
      */
     public $routes = array();
 
     /**
      * Flag to enable sort routes or not, false by default
-     *
      * @var boolean
      */
     public $sortRoutesEnabled = false;
 
-    public function __construct()
-    {
-    }
-
     /**
      * Enable sort routes before matching
-     *
      * @param  bool   $value boolean value to enable or not sort routes
      */
     public function enableSortRoutes(bool $value)
@@ -69,22 +64,33 @@ class Mapper
     }
 
     /**
-     * Match
-     * @param  string $url    url string to try map with a availables routes
-     * @return array  $params if the url was matched all routed params will be returned
-     *                        if it doesn't match a ResourceNotFoundException will thrown
+     * Match a url string given as parameter or with Request info.
+     *
+     * @param  mixed $url    it can be a url string or a Request object, it is used
+     *                       to try map it with all availables routes
+     * @return array $params if the url was matched all routed params will be returned
+     *                        if it doesn't match a ResourceNotFoundException will be thrown
      */
-    public function match($url)
+    public function match($mixed)
     {
+        if (! ($mixed instanceof Request) && ! is_string($mixed)) {
+            throw new \InvalidArgumentException(sprintf(
+                "Invalid Argument Error: Invalid type param, it can be a url string or a Request object, '%s' given.",
+                gettype($mixed)
+            ));
+        }
+
         if ($this->sortRoutesEnabled) {
             $this->sortRoutes();
         }
+
         foreach ($this->routes as $name => $route) {
-            if (($params = $route->match($url)) !== false) {
+            if (($params = $route->match($mixed)) !== false) {
                 return $params;
             }
         }
 
+        $url = is_string($mixed) ? $mixed : $mixed->getPathInfo();
         throw new Exception\ResourceNotFoundException($url);
     }
 

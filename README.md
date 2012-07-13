@@ -43,12 +43,12 @@ Sample Use:
     $mapper->connect(
         'complete_route',
         new Route(
-            '/leap_year/{year}',
-            array(
+            '/leap_year/{year}',  // pattern
+            array(  // defaults
                 '_controller' => 'Validator',
                 '_action' => 'leapYear'
             ),
-            array(
+            array( // requeriments
                 'year' => '\d+',
                 '_method' => array('GET', 'POST')
             )

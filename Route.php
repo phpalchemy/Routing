@@ -148,6 +148,11 @@ class Route
         if ($urlString instanceof Request) {
             $urlString = $mixed->getPathInfo();
             $requestMethod = strtolower($mixed->getMethod());
+
+            // HEAD and GET are equivalent as per RFC
+            if ('head' === ($method = strtolower($this->context->getMethod()))) {
+                $requestMethod = 'get';
+            }
         }
 
         $this->urlString = urldecode($urlString);

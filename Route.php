@@ -150,7 +150,7 @@ class Route
             $requestMethod = strtolower($mixed->getMethod());
 
             // HEAD and GET are equivalent as per RFC
-            if ('head' === ($method = strtolower($this->context->getMethod()))) {
+            if ('head' === ($method = strtolower($mixed->getMethod()))) {
                 $requestMethod = 'get';
             }
         }

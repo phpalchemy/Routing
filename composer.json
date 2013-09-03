@@ -1,5 +1,5 @@
 {
-    "name": "phpalchemy/Routing",
+    "name": "phpalchemy/routing",
     "type": "library",
     "description": "PHP Alchemy Routing Component",
     "keywords": ["php routing"],

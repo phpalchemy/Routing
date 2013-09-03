@@ -1,0 +1,22 @@
+{
+    "name": "phpalchemy/Routing",
+    "type": "library",
+    "description": "PHP Alchemy Routing Component",
+    "keywords": ["php routing"],
+    "homepage": "http://phpalchemy.org",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Erik Amaru Ortiz",
+            "email": "aortiz.erik@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-0": { "Alchemy\\Component\\Routing\\": "" }
+    },
+    "target-dir": "Alchemy/Component/Routing",
+}

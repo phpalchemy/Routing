@@ -38,7 +38,19 @@ class Mapper
      */
     public $sortRoutesEnabled = false;
 
-    protected $yaml;
+    /**
+     * @var \Alchemy\Component\Yaml\Yaml|null
+     */
+    protected $yaml = null;
+
+    /**
+     * @var string
+     */
+    protected $cacheDir = "";
+    /**
+     * @var string
+     */
+    protected $cacheContent = "";
 
     /**
      * @param \Alchemy\Component\Yaml\Yaml|null $yaml
@@ -50,6 +62,16 @@ class Mapper
         }
     }
 
+    public function setCacheDir($cacheDir)
+    {
+        $this->cacheDir = rtrim($cacheDir, DIRECTORY_SEPARATOR);
+    }
+
+    public function getCacheDir()
+    {
+        return $this->cacheDir;
+    }
+
     public function loadFrom($file)
     {
         $extension = pathinfo($file, PATHINFO_EXTENSION);
@@ -57,10 +79,21 @@ class Mapper
         switch ($extension) {
             case "yaml":
             case "yml";
-                if (! is_object($this->yaml)) {
-                    throw new \Exception("Yaml Parser library is not loaded");
+                $filename = basename($file);
+
+                if (! empty($this->cacheDir) && $this->isCached($filename)) { // try load from cache
+                    $routesList = $this->getCached();
+                } else {
+                    if (! is_object($this->yaml)) {
+                        throw new \Exception("Yaml Parser library is not loaded");
+                    }
+
+                    $routesList = $this->yaml->load($file);
+
+                    if (! empty($this->cacheDir)) {
+                        $this->saveInCache($file, $routesList);
+                    }
                 }
-                $routesList = $this->yaml->load($file);
 
                 foreach ($routesList as $routeData) {
                     // validate route data
@@ -89,7 +122,6 @@ class Mapper
 
                     $this->connect($routeData["pattern"], $route);
                 }
-
                 break;
         }
     }
@@ -210,6 +242,59 @@ class Mapper
         $x = $a;
         $a = $b;
         $b = $x;
+    }
+
+    /**
+     * Verify is a file is cached
+     * @param $filename
+     * @return bool
+     */
+    protected function isCached($filename)
+    {
+        if (! empty($this->cacheDir)) {
+            return false;
+        }
+
+        $cacheFile = $this->cacheDir . DIRECTORY_SEPARATOR . $filename . ".cache";
+
+        if (file_exists($cacheFile)
+            && is_array($this->cacheContent = include($cacheFile))
+            && $this->cacheContent["_chk"] == filemtime($cacheFile)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get cached content
+     * @return string
+     */
+    protected function getCached()
+    {
+        return $this->cacheContent;
+    }
+
+    /**
+     * Save in cache
+     * @param $filename
+     * @return bool
+     */
+    protected function saveInCache($filename, $content)
+    {
+        if (empty($this->cacheDir) || ! is_dir($this->cacheDir) || ! is_writable($this->cacheDir)) {
+            return false;
+        }
+
+        $content["_chk"] = filemtime($filename);
+
+        file_put_contents(
+            $this->cacheDir . DIRECTORY_SEPARATOR . basename($filename) . ".cache",
+            "<?php return " . var_export($content, true) . ";"
+        );
+
+        return true;
     }
 }
 

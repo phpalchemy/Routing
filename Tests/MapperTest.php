@@ -110,5 +110,15 @@ class MapperTest extends PHPUnit_Framework_TestCase
         $url = '/my_controller/my_action/var1/val1';
         $params = $mapper->match($url);
     }
+
+    /**
+     * Test cache
+     *
+     */
+    public function testCachedSoure()
+    {
+
+
+    }
 }
 

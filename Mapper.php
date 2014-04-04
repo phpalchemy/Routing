@@ -38,11 +38,18 @@ class Mapper
      */
     public $sortRoutesEnabled = false;
 
+    protected $yaml;
+
+    public function __construct(Yaml $yaml = null)
+    {
+
+    }
+
     /**
      * Enable sort routes before matching
      * @param  bool   $value boolean value to enable or not sort routes
      */
-    public function enableSortRoutes(bool $value)
+    public function enableSortRoutes($value)
     {
         $this->sortRoutesEnabled = $value;
     }

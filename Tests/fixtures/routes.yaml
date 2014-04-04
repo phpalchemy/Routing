@@ -5,7 +5,7 @@
 
 home_route:
     pattern: "/"
-    defaults: {_controller: main, _action: index}
+    defaults: {_controller: sample, _action: index}
 
 to_index_route:
     pattern: "/{_controller}"

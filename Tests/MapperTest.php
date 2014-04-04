@@ -129,6 +129,33 @@ class MapperTest extends PHPUnit_Framework_TestCase
     {
         $mapper = new Mapper(new \Alchemy\Component\Yaml\Yaml());
         $mapper->loadFrom(self::$rootDir . "/Tests/fixtures/routes.yaml");
+
+        //#1
+        $url = '/';
+        $expected = array(
+            '_controller' => 'sample',
+            '_action' => 'index'
+        );
+        $params = $mapper->match($url);
+        $this->assertEquals($expected, $params);
+
+        //#2
+        $url = '/my_controller';
+        $expected = array(
+            '_controller' => 'my_controller',
+            '_action' => 'index'
+        );
+        $params = $mapper->match($url);
+        $this->assertEquals($expected, $params);
+
+        //#3
+        $url = '/my_controller/my_action';
+        $expected = array(
+            '_controller' => 'my_controller',
+            '_action' => 'my_action'
+        );
+        $params = $mapper->match($url);
+        $this->assertEquals($expected, $params);
     }
 }
 

@@ -148,6 +148,22 @@ class MapperTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(self::$cachemtime, filemtime($cacheDir . "/routes.yaml.cache"));
     }
 
+    /**
+     * Test routes
+     */
+    public function testMapping()
+    {
+        $mapper = new Mapper(new \Alchemy\Component\Yaml\Yaml());
+        $mapper->loadFrom(self::$rootDir . "/Tests/fixtures/routes2.yaml");
+        $result = $mapper->match('/example_controller/home');
+        $expected = array(
+            "_controller" => 'Sandbox\Controller\example_controller',
+            "_action" => 'homeAction'
+        );
+
+        $this->assertEquals($expected, $result);
+    }
+
     function provider1()
     {
         return array(

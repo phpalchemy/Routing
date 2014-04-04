@@ -39,6 +39,11 @@ class Mapper
     public $sortRoutesEnabled = false;
 
     /**
+     * @var array
+     */
+    protected $mapping = array();
+
+    /**
      * @var \Alchemy\Component\Yaml\Yaml|null
      */
     protected $yaml = null;
@@ -82,16 +87,26 @@ class Mapper
                 $filename = basename($file);
 
                 if (! empty($this->cacheDir) && $this->isCached($filename)) { // try load from cache
-                    $routesList = $this->getCached();
+                    $cache = $this->getCached();
+                    if (isset($cache["mapping"])) {
+                        $this->mapping = $cache["mapping"];
+                    }
+                    $routesList = $cache["routes"];
                 } else {
                     if (! is_object($this->yaml)) {
                         throw new \Exception("Yaml Parser library is not loaded");
                     }
 
-                    $routesList = $this->yaml->load($file);
+                    $data = $this->yaml->load($file);
+
+                    if (isset($cache["mapping"])) {
+                        $this->mapping = $data["mapping"];
+                    }
+
+                    $routesList = $data["routes"];
 
                     if (! empty($this->cacheDir)) {
-                        $this->saveInCache($file, $routesList);
+                        $this->saveInCache($file, $data);
                     }
                 }
 
@@ -174,6 +189,14 @@ class Mapper
 
         foreach ($this->routes as $name => $route) {
             if (($params = $route->match($mixed)) !== false) {
+                if (! empty($this->mapping)) {
+                    foreach ($this->mapping as $mapKey => $mapvalue) {
+                        if (array_key_exists($mapKey, $params)) {
+                            $params[$mapKey] = str_replace("{".$mapKey."}", $params[$mapKey], $mapvalue);
+                        }
+                    }
+                }
+
                 return $params;
             }
         }

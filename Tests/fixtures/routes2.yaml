@@ -3,6 +3,11 @@
 # Specify routes to match all url requests
 #
 
+mapping:
+  #- _controller: {to: Sandbox\Controller\{_controller}Controller, transform: ucfirst}
+  - _controller: Sandbox\Controller\{_controller}Controller
+  - _action: {_action}Action
+
 routes:
   home_route:
     pattern: "/"

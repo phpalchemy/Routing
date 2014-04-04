@@ -1,0 +1,16 @@
+#
+# routes.yaml
+# Specify routes to match all url requests
+#
+
+home_route:
+    pattern: "/"
+    defaults: {_controller: main, _action: index}
+
+to_index_route:
+    pattern: "/{_controller}"
+    defaults: {_action: index}
+
+complete_route:
+    pattern: "/{_controller}/{_action}"
+    defaults: {}

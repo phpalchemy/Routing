@@ -58,10 +58,11 @@ class Route
         $this->setRequirements($requirements);
 
         $this->type = $type;
-        $this->parameters  = array();
         $this->resourcePath = $resourcePath;
 
-        $this->prepare();
+        if (! empty($pattern)) {
+            $this->prepare();
+        }
     }
 
     public function setPattern($pattern)

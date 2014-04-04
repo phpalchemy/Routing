@@ -40,9 +40,58 @@ class Mapper
 
     protected $yaml;
 
-    public function __construct(Yaml $yaml = null)
+    /**
+     * @param \Alchemy\Component\Yaml\Yaml|null $yaml
+     */
+    public function __construct(\Alchemy\Component\Yaml\Yaml $yaml = null)
     {
+        if (! is_null($yaml)) {
+            $this->yaml = $yaml;
+        }
+    }
 
+    public function loadFrom($file)
+    {
+        $extension = pathinfo($file, PATHINFO_EXTENSION);
+
+        switch ($extension) {
+            case "yaml":
+            case "yml";
+                if (! is_object($this->yaml)) {
+                    throw new \Exception("Yaml Parser library is not loaded");
+                }
+                $routesList = $this->yaml->load($file);
+
+                foreach ($routesList as $routeData) {
+                    // validate route data
+                    if (! isset($routeData["pattern"])) {
+                        throw new \Exception("Invalid route definition, param: \"pattern\" is required.");
+                    }
+                    if (! is_string($routeData["pattern"])) {
+                        throw new \Exception("Invalid route definition, param: \"pattern\" must be a string.");
+                    }
+                    if (isset($routeData["defaults"]) && ! is_array($routeData["defaults"])) {
+                        throw new \Exception("Invalid route definition, param: \"defaults\" must be an array.");
+                    }
+                    if (isset($routeData["requirements"]) && ! is_array($routeData["requirements"])) {
+                        throw new \Exception("Invalid route definition, param: \"requirements\" must be an array.");
+                    }
+
+                    $route = new Route();
+                    $route->setPattern($routeData["pattern"]);
+
+                    if (array_key_exists("defaults", $routeData)) {
+                        $route->setDefaults($routeData["defaults"]);
+                    }
+                    if (array_key_exists("requirements", $routeData)) {
+                        $route->setRequirements($routeData["requirements"]);
+                    }
+
+                    $this->connect($routeData["pattern"], $route);
+                }
+
+                break;
+        }
     }
 
     /**

@@ -12,11 +12,21 @@ class MapperTest extends PHPUnit_Framework_TestCase
      * @var Mapper
      */
     protected $object;
+    public static $rootDir = "";
 
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      */
+    public static function setUpBeforeClass()
+    {
+        self::$rootDir = realpath(__DIR__ . "/../");
+
+        if (is_dir(self::$rootDir . "/vendor")) {
+            require_once self::$rootDir . "/vendor/autoload.php";
+        }
+    }
+
     protected function setUp()
     {
         $this->object = new Mapper;
@@ -117,8 +127,8 @@ class MapperTest extends PHPUnit_Framework_TestCase
      */
     public function testCachedSoure()
     {
-
-
+        $mapper = new Mapper(new \Alchemy\Component\Yaml\Yaml());
+        $mapper->loadFrom(self::$rootDir . "/Tests/fixtures/routes.yaml");
     }
 }
 

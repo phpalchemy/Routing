@@ -26,21 +26,50 @@ use Alchemy\Component\Http\Request;
  */
 class Route
 {
+    /**
+     * @var string
+     */
     protected $pattern = '';
+    /**
+     * @var string
+     */
     protected $realPattern = '';
+    /**
+     * @var array
+     */
     protected $vars = array();
+    /**
+     * @var array
+     */
     protected $defaults = array();
+    /**
+     * @var array
+     */
     protected $requirements = array();
+    /**
+     * @var array|bool
+     */
+    protected $mapping = false;
+    /**
+     * @var string
+     */
     protected $urlString = '';
-
+    /**
+     * @var string
+     */
     protected $type = '';
+    /**
+     * @var string
+     */
     protected $resourcePath = '';
-
+    /**
+     * @var array
+     */
     public $parameters = array();
 
     /**
-     * Request object to try match withh the request information
-     * @var Alchemy\Component\Http\Request
+     * Request object to try match with the request information
+     * @var \Alchemy\Component\Http\Request
      */
     protected $request;
 
@@ -108,6 +137,16 @@ class Route
         return $this->requirements;
     }
 
+    public function setMapping($mapping)
+    {
+        $this->mapping = $mapping;
+    }
+
+    public function getMapping()
+    {
+        return $this->requirements;
+    }
+
     public function getType()
     {
         return $this->type;
@@ -137,6 +176,11 @@ class Route
         $this->realPattern = preg_replace($patterns, $replacements, $this->pattern);
     }
 
+    /**
+     * @param \Alchemy\Component\Http\Request|string $mixed
+     * @return array|bool
+     * @throws \Exception
+     */
     public function match($mixed)
     {
         $this->prepare();
@@ -187,7 +231,37 @@ class Route
 
         $this->parameters = array_merge($this->defaults, $this->parameters);
 
+        if (! empty($this->mapping) && $this->mapping) {
+            foreach ($this->mapping as $mapKey => $mapValue) {
+                if (! is_string($mapValue) && ! is_array($mapValue)) {
+                    continue;
+                }
+                if (is_array($mapValue) && isset($mapValue["to"]) && isset($mapValue["transform"])) {
+                    $trn = $mapValue["transform"];
+                    $mapValue = $mapValue["to"];
+                    $trn = strpos($trn, ",") !== false ? explode(",", $trn) : array($trn);
+
+                    foreach($trn as $transform) {
+                        $transform = trim($transform);
+                        switch ($transform) {
+                            case "ucfirst": $this->parameters[$mapKey] = ucfirst($this->parameters[$mapKey]); break;
+                            case "lcfirst": $this->parameters[$mapKey] = lcfirst($this->parameters[$mapKey]); break;
+                            case "camelcase": $this->parameters[$mapKey] = self::camelcase($this->parameters[$mapKey]); break;
+                        }
+                    }
+                }
+                if (isset($this->parameters[$mapKey])) {
+                    $this->parameters[$mapKey] = str_replace("{".$mapKey."}", $this->parameters[$mapKey], $mapValue);
+                }
+            }
+        }
+
         return $this->parameters;
+    }
+
+    public static function camelcase($str)
+    {
+        return str_replace(" ", "", ucwords(str_replace("_", " ", $str)));
     }
 }
 

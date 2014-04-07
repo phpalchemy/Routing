@@ -28,7 +28,7 @@ class Mapper
 {
     /**
      * Contains routes collection
-     * @var array
+     * @var Route[]
      */
     public $routes = array();
 
@@ -87,11 +87,7 @@ class Mapper
                 $filename = basename($file);
 
                 if (! empty($this->cacheDir) && $this->isCached($filename)) { // try load from cache
-                    $cache = $this->getCached();
-                    if (isset($cache["mapping"])) {
-                        $this->mapping = $cache["mapping"];
-                    }
-                    $routesList = $cache["routes"];
+                    $data = $this->getCached();
                 } else {
                     if (! is_object($this->yaml)) {
                         throw new \Exception("Yaml Parser library is not loaded");
@@ -99,15 +95,15 @@ class Mapper
 
                     $data = $this->yaml->load($file);
 
-                    if (isset($cache["mapping"])) {
-                        $this->mapping = $data["mapping"];
-                    }
-
-                    $routesList = $data["routes"];
-
                     if (! empty($this->cacheDir)) {
                         $this->saveInCache($file, $data);
                     }
+                }
+
+                $routesList = $data["routes"];
+
+                if (isset($data["mapping"])) {
+                    $this->mapping = $data["mapping"];
                 }
 
                 foreach ($routesList as $routeData) {
@@ -133,6 +129,11 @@ class Mapper
                     }
                     if (array_key_exists("requirements", $routeData)) {
                         $route->setRequirements($routeData["requirements"]);
+                    }
+                    if (array_key_exists("mapping", $routeData)) {
+                        $route->setMapping($routeData["mapping"]);
+                    } elseif (! empty($this->mapping)) {
+                        $route->setMapping($this->mapping);
                     }
 
                     $this->connect($routeData["pattern"], $route);
@@ -169,10 +170,13 @@ class Mapper
     /**
      * Match a url string given as parameter or with Request info.
      *
-     * @param  mixed $url    it can be a url string or a Request object, it is used
-     *                       to try map it with all availables routes
+     * @param $mixed
+     * @throws \InvalidArgumentException
+     * @throws Exception\ResourceNotFoundException
+     * @internal param mixed $url it can be a url string or a Request object, it is used
+     *                       to try map it with all available routes
      * @return array $params if the url was matched all routed params will be returned
-     *                        if it doesn't match a ResourceNotFoundException will be thrown
+     *                        if it does not match a ResourceNotFoundException will be thrown
      */
     public function match($mixed)
     {
@@ -189,14 +193,6 @@ class Mapper
 
         foreach ($this->routes as $name => $route) {
             if (($params = $route->match($mixed)) !== false) {
-                if (! empty($this->mapping)) {
-                    foreach ($this->mapping as $mapKey => $mapvalue) {
-                        if (array_key_exists($mapKey, $params)) {
-                            $params[$mapKey] = str_replace("{".$mapKey."}", $params[$mapKey], $mapvalue);
-                        }
-                    }
-                }
-
                 return $params;
             }
         }
@@ -206,16 +202,17 @@ class Mapper
     }
 
     /**
-     * This method sorts all raoutes connected to the mapper
+     * This method sorts all routes connected to the mapper
      */
     protected function sortRoutes()
     {
         //TODO store the first preordering set in cache, it need to order just one time
+        $routes = array();
         foreach ($this->routes as $i => $item) {
-            $this->routes[$i]['patCount'] = count(explode('/', $item['route']->getPattern()));
-            $this->routes[$i]['reqCount'] = count($item['route']->getRequirements());
-            $this->routes[$i]['varCount'] = count($item['route']->getVars());
-            $this->routes[$i]['pop'] = trim(array_pop(explode('/', $item['route']->getPattern())));
+            $this->routes[$i]['patCount'] = count(explode('/', $item->getPattern()));
+            $this->routes[$i]['reqCount'] = count($item->getRequirements());
+            $this->routes[$i]['varCount'] = count($item->getVars());
+            $this->routes[$i]['pop'] = trim(array_pop(explode('/', $item->getPattern())));
         }
 
         $list = $this->routes;
@@ -302,6 +299,7 @@ class Mapper
     /**
      * Save in cache
      * @param $filename
+     * @param $content
      * @return bool
      */
     protected function saveInCache($filename, $content)

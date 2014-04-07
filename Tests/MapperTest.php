@@ -155,13 +155,45 @@ class MapperTest extends PHPUnit_Framework_TestCase
     {
         $mapper = new Mapper(new \Alchemy\Component\Yaml\Yaml());
         $mapper->loadFrom(self::$rootDir . "/Tests/fixtures/routes2.yaml");
-        $result = $mapper->match('/example_controller/home');
+        $result = $mapper->match('/login/auth');
         $expected = array(
-            "_controller" => 'Sandbox\Controller\example_controller',
-            "_action" => 'homeAction'
+            "_controller" => 'Sandbox\Controller\loginController',
+            "_action" => 'authAction'
         );
 
         $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test routes
+     */
+    public function testMapping2()
+    {
+        $mapper = new Mapper(new \Alchemy\Component\Yaml\Yaml());
+        $mapper->loadFrom(self::$rootDir . "/Tests/fixtures/routes3.yaml");
+        $result = $mapper->match('/user_role/assign');
+        $expected = array(
+            "_controller" => 'Sandbox\Controller\UserRoleController',
+            "_action" => 'assignAction'
+        );
+        $this->assertEquals($expected, $result);
+
+        $result = $mapper->match('/tool/leap_year/1998');
+        $expected = array(
+            "_controller" => 'SomeOther\Module\UserTools',
+            "_action" => 'leapYear',
+            "year" => 1998
+        );
+        $this->assertEquals($expected, $result);
+
+//        $result = $mapper->match('/admin/setup/group/profile');
+//        $expected = array(
+//            "_controller" => 'Sandbox\Utils\groupTest',
+//            "_action" => 'do_update_profile',
+//            "year" => 1998
+//        );
+//        $this->assertEquals($expected, $result);
+
     }
 
     function provider1()

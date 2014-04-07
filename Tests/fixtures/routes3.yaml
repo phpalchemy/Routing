@@ -1,0 +1,33 @@
+#
+# routes.yaml
+# Specify routes to match all url requests
+#
+
+mapping:
+  _controller: {to: Sandbox\Controller\{_controller}Controller, transform: camelcase}
+  _action: {to: {_action}Action, transform: "camelcase, lcfirst"}
+
+routes:
+  home_route:
+    pattern: "/"
+    defaults: {_controller: sample, _action: index}
+
+  to_index_route:
+    pattern: "/{_controller}"
+    defaults: {_action: index}
+
+  complete_route:
+    pattern: "/{_controller}/{_action}"
+    defaults: {}
+
+  leap_year_route:
+    pattern: /tool/leap_year/{year}
+    defaults: { _controller: SomeOther\Module\UserTools, _action: leapYear }
+    mapping: false
+
+  test_route:
+    pattern: /admin/setup/{_controller}/{option}
+    defaults: { _action: update }
+    mapping:
+      _controller: Sandbox\Utils\{_controller}Test
+      _action: do_{option}_{_action}

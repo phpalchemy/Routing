@@ -246,5 +246,50 @@ class RouteTest extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($route->match($request));
     }
+
+    public function testSetters()
+    {
+        $route = new Route();
+        $route->setPattern('/my_controller/{action}/{year}');
+        $route->setDefaults(array('controller'=>'my_controller'));
+        $route->setRequirements(array('year'=>'\d+'));
+
+        $expected = array('controller'=>'my_controller', 'action'=>'my_action', 'year'=>2012);
+        $this->assertEquals($expected, $route->match('/my_controller/my_action/2012'));
+    }
+
+    public function testMapping()
+    {
+        $route = new Route();
+        $route->setPattern("/{_controller}/{_action}");
+        $route->setMapping(array(
+            "_controller" => array("to" => '\Sandbox\Controller\{_controller}Controller', "transform" => "camelcase"),
+            "_action" => array("to" => "{_action}Action", "transform" => "camelcase,lcfirst")
+        ));
+
+        $expected = array(
+            '_controller'=>'\Sandbox\Controller\UserRoleController',
+            '_action'=>'testListAction'
+        );
+
+        $this->assertEquals($expected, $route->match('/user_role/test_list'));
+    }
+
+    public function testMappingComplex()
+    {
+        $route = new Route();
+        $route->setPattern("/{_module}/{_controller}/{_action}");
+        $route->setMapping(array(
+            "_controller" => array("to" => 'Sandbox\Controller\{_module}\{_controller}Controller', "transform" => "camelcase"),
+            "_action" => array("to" => "{_action}Action", "transform" => "camelcase,lcfirst")
+        ));
+
+        $expected = array(
+            '_controller'=>'\Sandbox\Controller\Admin\UserRoleController',
+            '_action'=>'testListAction'
+        );
+
+        $this->assertEquals($expected, $route->match('/admin/user_role/test_list'));
+    }
 }
 

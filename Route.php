@@ -230,33 +230,53 @@ class Route
         }
 
         $this->parameters = array_merge($this->defaults, $this->parameters);
+        $this->parameters = $this->map($this->parameters);
 
-        if (! empty($this->mapping) && $this->mapping) {
-            foreach ($this->mapping as $mapKey => $mapValue) {
-                if (! is_string($mapValue) && ! is_array($mapValue)) {
-                    continue;
-                }
-                if (is_array($mapValue) && isset($mapValue["to"]) && isset($mapValue["transform"])) {
-                    $trn = $mapValue["transform"];
-                    $mapValue = $mapValue["to"];
-                    $trn = strpos($trn, ",") !== false ? explode(",", $trn) : array($trn);
+        return $this->parameters;
+    }
 
-                    foreach($trn as $transform) {
-                        $transform = trim($transform);
-                        switch ($transform) {
-                            case "ucfirst": $this->parameters[$mapKey] = ucfirst($this->parameters[$mapKey]); break;
-                            case "lcfirst": $this->parameters[$mapKey] = lcfirst($this->parameters[$mapKey]); break;
-                            case "camelcase": $this->parameters[$mapKey] = self::camelcase($this->parameters[$mapKey]); break;
+    public function map($parameters)
+    {
+        if (empty($this->mapping) || $this->mapping == false) {
+            return $parameters;
+        }
+
+        foreach ($this->mapping as $mapKey => $mapValue) {
+            if (is_array($mapValue)) {
+                if (isset($mapValue["transform"]) && isset($parameters[$mapKey])) {
+                    $transform = $mapValue["transform"];
+                    $transformList = strpos($transform, ",") !== false ? explode(",", $transform) : array($transform);
+
+                    foreach($transformList as $trans) {
+                        switch (trim($trans)) {
+                            case "ucfirst": $parameters[$mapKey] = ucfirst($parameters[$mapKey]); break;
+                            case "lcfirst": $parameters[$mapKey] = lcfirst($parameters[$mapKey]); break;
+                            case "camelcase": $parameters[$mapKey] = self::camelcase($parameters[$mapKey]); break;
                         }
                     }
-                }
-                if (isset($this->parameters[$mapKey])) {
-                    $this->parameters[$mapKey] = str_replace("{".$mapKey."}", $this->parameters[$mapKey], $mapValue);
                 }
             }
         }
 
-        return $this->parameters;
+        foreach ($this->mapping as $mapKey => $mapValue) {
+            if (! is_string($mapValue) && ! is_array($mapValue)) {
+                continue;
+            }
+
+            $mapValue = (is_array($mapValue) && isset($mapValue["to"])) ? $mapValue["to"] : "";
+
+            if (! empty($mapValue)) {
+                foreach ($parameters as $key => $value) {
+                    if (strpos($mapValue, "{".$key."}") !== false) {
+                        $mapValue = str_replace("{".$key."}", $value, $mapValue);
+                    }
+                }
+
+                $parameters[$mapKey] = $mapValue;
+            }
+        }
+
+        return $parameters;
     }
 
     public static function camelcase($str)

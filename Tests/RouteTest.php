@@ -281,11 +281,13 @@ class RouteTest extends PHPUnit_Framework_TestCase
         $route->setPattern("/{_module}/{_controller}/{_action}");
         $route->setMapping(array(
             "_controller" => array("to" => 'Sandbox\Controller\{_module}\{_controller}Controller', "transform" => "camelcase"),
-            "_action" => array("to" => "{_action}Action", "transform" => "camelcase,lcfirst")
+            "_action" => array("to" => "{_action}Action", "transform" => "camelcase,lcfirst"),
+            "_module" => array("transform" => "camelcase")
         ));
 
         $expected = array(
-            '_controller'=>'\Sandbox\Controller\Admin\UserRoleController',
+            '_module' => 'Admin',
+            '_controller'=>'Sandbox\Controller\Admin\UserRoleController',
             '_action'=>'testListAction'
         );
 

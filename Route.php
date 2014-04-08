@@ -263,7 +263,9 @@ class Route
                 continue;
             }
 
-            $mapValue = (is_array($mapValue) && isset($mapValue["to"])) ? $mapValue["to"] : "";
+            if (is_array($mapValue)) {
+                $mapValue = isset($mapValue["to"]) ? $mapValue["to"] : "";
+            }
 
             if (! empty($mapValue)) {
                 foreach ($parameters as $key => $value) {

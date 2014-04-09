@@ -230,17 +230,19 @@ class Route
         }
 
         $this->parameters = array_merge($this->defaults, $this->parameters);
-        $this->parameters = $this->map($this->parameters);
+
+        if (! empty($this->mapping)) {
+            $this->parameters = array(
+                "params" => $this->parameters,
+                "mapped" => $this->map($this->parameters)
+            );
+        }
 
         return $this->parameters;
     }
 
     public function map($parameters)
     {
-        if (empty($this->mapping) || $this->mapping == false) {
-            return $parameters;
-        }
-
         foreach ($this->mapping as $mapKey => $mapValue) {
             if (is_array($mapValue)) {
                 if (isset($mapValue["transform"]) && isset($parameters[$mapKey])) {

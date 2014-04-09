@@ -268,8 +268,14 @@ class RouteTest extends PHPUnit_Framework_TestCase
         ));
 
         $expected = array(
-            '_controller'=>'\Sandbox\Controller\UserRoleController',
-            '_action'=>'testListAction'
+            "params" => array(
+                '_controller'=>'user_role',
+                '_action'=>'test_list'
+            ),
+            "mapped" => array(
+                '_controller'=>'\Sandbox\Controller\UserRoleController',
+                '_action'=>'testListAction'
+            )
         );
 
         $this->assertEquals($expected, $route->match('/user_role/test_list'));
@@ -286,9 +292,16 @@ class RouteTest extends PHPUnit_Framework_TestCase
         ));
 
         $expected = array(
-            '_module' => 'Admin',
-            '_controller'=>'Sandbox\Controller\Admin\UserRoleController',
-            '_action'=>'testListAction'
+            "params" => array(
+                '_module' => 'admin',
+                '_controller'=>'user_role',
+                '_action'=>'test_list'
+            ),
+            "mapped" => array(
+                '_module' => 'Admin',
+                '_controller'=>'Sandbox\Controller\Admin\UserRoleController',
+                '_action'=>'testListAction'
+            )
         );
 
         $this->assertEquals($expected, $route->match('/admin/user_role/test_list'));

@@ -157,8 +157,14 @@ class MapperTest extends PHPUnit_Framework_TestCase
         $mapper->loadFrom(self::$rootDir . "/Tests/fixtures/routes2.yaml");
         $result = $mapper->match('/login/auth');
         $expected = array(
-            "_controller" => 'Sandbox\Controller\loginController',
-            "_action" => 'authAction'
+            "params" => array(
+                '_controller'=>'login',
+                '_action'=>'auth'
+            ),
+            "mapped" => array(
+                "_controller" => 'Sandbox\Controller\loginController',
+                "_action" => 'authAction'
+            )
         );
 
         $this->assertEquals($expected, $result);
@@ -173,12 +179,19 @@ class MapperTest extends PHPUnit_Framework_TestCase
         $mapper->loadFrom(self::$rootDir . "/Tests/fixtures/routes3.yaml");
         $result = $mapper->match('/user_role/assign');
         $expected = array(
-            "_controller" => 'Sandbox\Controller\UserRoleController',
-            "_action" => 'assignAction'
+            "params" => array(
+                '_controller'=>'user_role',
+                '_action'=>'assign'
+            ),
+            "mapped" => array(
+                "_controller" => 'Sandbox\Controller\UserRoleController',
+                "_action" => 'assignAction'
+            )
         );
         $this->assertEquals($expected, $result);
 
         $result = $mapper->match('/tool/leap_year/1998');
+
         $expected = array(
             "_controller" => 'SomeOther\Module\UserTools',
             "_action" => 'leapYear',
